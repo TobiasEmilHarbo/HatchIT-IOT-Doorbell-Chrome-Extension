@@ -1,0 +1,27 @@
+{
+    "manifest_version": 2,
+    "name": "HatchIT IOT Enabled Doorbell",
+    "version": "0.1",
+    "description": "HatchIT IOT Enabled Doorbell",
+    "content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
+    "content_scripts": [{
+        "matches" : [
+            "<all_urls>"
+        ],
+        "js": [
+            "content.js"
+        ]
+    }],
+    "background" : {
+        "page": "background.html"
+    },
+    "browser_action" : {
+        "default_icon" : "bell.png",
+        "default_title" : "HatchIT Doorbell",
+        "default_popup" : "popup/index.html" 
+    },
+    "permissions" : [
+        "notifications",
+        "storage"
+    ]
+}
