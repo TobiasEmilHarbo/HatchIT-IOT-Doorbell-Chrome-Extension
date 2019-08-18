@@ -1,3 +1,7 @@
+String.prototype.between = function(min, max) {
+    return (parseInt(this) > max) ? String(max) : (parseInt(this) < min ? String(min) : this)
+}
+
 let mutedCheckbox       = document.getElementById('muted')
 let officeHoursCheckbox = document.getElementById('only-office-hours')
 let officeHoursInputs   = document.querySelectorAll('input.office-hours')
@@ -8,14 +12,13 @@ mutedCheckbox.addEventListener('click', () => {
 
         const muted = !data.muted
 
-        console.log('MUTED', muted)
-
         chrome.storage.sync.set({ muted: muted })
 
         officeHoursCheckbox.disabled = muted
 
         Array.from(officeHoursInputs).forEach(input => {
-            input.disabled = muted
+            if(officeHoursCheckbox.checked)
+                input.disabled = muted
         })
 
         chrome.browserAction.setIcon({
@@ -35,8 +38,6 @@ chrome.storage.sync.get(null, data => {
         input.disabled = data.muted || !data.onlyOfficeHours
     })
 
-    console.log(officeHoursInputs)
-
     if(data.officeHours)
     {
         const {
@@ -50,8 +51,6 @@ chrome.storage.sync.get(null, data => {
         officeHoursInputs[1].value = String(minsStart).padStart(2, '0')
         officeHoursInputs[2].value = String(hoursEnd).padStart(2, '0')
         officeHoursInputs[3].value = String(minsEnd).padStart(2, '0')
-
-        
     }
 })
 
@@ -69,14 +68,11 @@ officeHoursCheckbox.addEventListener('click', () => {
     })
 })
 
-chrome.storage.sync.get(null, data => {
-})
-
 Array.from(officeHoursInputs).forEach(input => {
 
     input.addEventListener('change', event => {
-    
-        input.value = input.value.slice(0, 2).padStart(2, '0')
+        
+        input.value = input.value.between(input.min, input.max).padStart(2, '0')
 
         let hoursStart  = parseInt(officeHoursInputs[0].value)
         let minsStart   = parseInt(officeHoursInputs[1].value)
@@ -94,3 +90,6 @@ Array.from(officeHoursInputs).forEach(input => {
         })
     })
 })
+
+
+

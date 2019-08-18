@@ -23,5 +23,10 @@
     "permissions" : [
         "notifications",
         "storage"
-    ]
+    ],
+    "icons" : {
+        "16": "bell.png",
+        "48": "bell.png",
+        "128": "bell.png"
+    }
 }

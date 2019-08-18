@@ -11,20 +11,32 @@ let config = {
 
 firebase.initializeApp(config);
 
-firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(query => {
+firebase.firestore().collection('notifications').onSnapshot(query => {
     
-    if(query.size < 1) return
+    let notifications = 0
+
+    query.forEach(doc => {
+        if(doc.data().notify)
+            notifications++;
+    })
+
+    chrome.browserAction.setBadgeText({text: ''})
+
+    if(notifications < 1) return
 
     let config = {
         type    : "basic",
         iconUrl : "bell-notification.png",
         title   : "Office doorbell",
-        message : "Someone's at the door!",
+        message : "Someones at the door!",
         buttons : [
             { title : "I got it!" },
             { title : "Mute" }
         ]
     }
+
+    chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
+    chrome.browserAction.setBadgeText({text : String(notifications)})
 
     chrome.storage.sync.get(null, data => {
 
