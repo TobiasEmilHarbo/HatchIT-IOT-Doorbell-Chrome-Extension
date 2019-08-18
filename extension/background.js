@@ -11,18 +11,12 @@ let config = {
 
 firebase.initializeApp(config);
 
-firebase.firestore().collection('notifications').onSnapshot(query => {
+firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(query => {
     
-    let notifications = 0
-
-    query.forEach(doc => {
-        if(doc.data().notify)
-            notifications++;
-    })
-
     chrome.browserAction.setBadgeText({text: ''})
 
-    if(notifications < 1) return
+    if(query.size > 0)
+        return
 
     let config = {
         type    : "basic",
@@ -36,7 +30,7 @@ firebase.firestore().collection('notifications').onSnapshot(query => {
     }
 
     chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
-    chrome.browserAction.setBadgeText({text : String(notifications)})
+    chrome.browserAction.setBadgeText({text : String(query.size)})
 
     chrome.storage.sync.get(null, data => {
 
@@ -82,7 +76,6 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
                         notify : false
                     })
                 })
-            
             })
         break
         case (1):

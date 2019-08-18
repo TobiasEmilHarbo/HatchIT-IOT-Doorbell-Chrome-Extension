@@ -13,6 +13,7 @@ adminFs.settings(settings)
 
 exports.doorbell = functions.pubsub.topic('doorbell').onPublish(async message => {
     return admin.firestore().collection('notifications').add({
-        notify : true
+        notify : true,
+        at : admin.firestore.FieldValue.serverTimestamp()
     })
 })

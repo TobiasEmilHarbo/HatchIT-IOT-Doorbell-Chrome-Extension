@@ -8,6 +8,8 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Document</title>
 
+        <script src="https://www.gstatic.com/firebasejs/6.3.5/firebase.js"></script>
+
         <link rel="stylesheet" type="text/css" href="style.css">
 
         <style>
@@ -21,8 +23,8 @@
             
             div.popup {
                 width: 320px;
-                margin: 32px;
-                margin-bottom:56px;
+                margin: 16px;
+                margin-bottom:32px;
             }
 
             div.popup header {
@@ -65,7 +67,7 @@
 
             div.office-hours {
                 display: grid;
-                grid-template-rows: 1fr 1fr;
+                grid-template-rows: 1fr 32px 1fr;
                 grid-template-columns: 1fr 40px 1fr;
             }
 
@@ -88,10 +90,15 @@
                 color: lightgray;
             }
 
-            div.office-hours input.office-hours:disabled + span {
+            div.office-hours input.office-hours:disabled + span.colon {
                 color: rgb(255, 223, 208);
             }
 
+            div.office-hours input.office-hours:disabled + span.until {
+                color: lightgray;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
           
             div.office-hours span.colon {
                 color: rgb(238, 85, 25);
@@ -130,8 +137,21 @@
                 grid-column: 3;
             }
 
-            div.office-hours .office-hours.end {
+            div.office-hours span.until {
                 grid-row: 2;
+                grid-column: 2;
+                text-transform: uppercase;
+                font-size: 10px;
+                font-weight: bold;
+                align-self: end;
+                justify-self: center;
+                color: gray;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            div.office-hours .office-hours.end {
+                grid-row: 3;
                 justify-self: center;
                 align-self: end;
             }
@@ -215,6 +235,52 @@
                 background-color: rgb(228, 228, 228);
             }
 
+            div#log {
+                background-color: rgb(238, 85, 25);
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                grid-template-rows: 1fr;
+                padding: 0 32px;
+                height: 0;
+                overflow: hidden;
+                position: relative;
+                -webkit-transition: .4s;
+                transition: .4s;
+            }
+
+            div#log.show{
+                height: auto;
+                padding: 24px 32px;
+                -webkit-transition: .2s;
+                transition: .2s;
+            }
+
+            div#log span {
+                color: white;
+                font-size: 16px;
+                font-weight: bold;
+                align-self: center;
+                line-height: 16px;
+            }
+
+
+            button {
+                background: white;
+                padding: 12px 16px;
+                font-size: 14px;
+                line-height: 16px;
+                border-radius: 100px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background-color: rgb(255, 223, 208);
+            }
+
+            div#log button {
+                align-self: center;
+            }
+
         </style>
         
     </head>
@@ -293,14 +359,13 @@
                 <input type="number" class="office-hours hours start" min="0" max="23">
                 <span class="office-hours start colon">:</span>
                 <input type="number" class="office-hours mins start" min="0" max="59">
+                <span class="until">Until</span>
                 <input type="number" class="office-hours hours end" min="0" max="23">
                 <span class="office-hours end colon">:</span>
                 <input type="number" class="office-hours mins end" min="0" max="59">
 
             </div>
 
-            <br>
-            <br>
             <br>
             <br>
 
@@ -316,10 +381,17 @@
                 </label>
             
             </div>
+        
+        </div>
 
-            <script src="script.js"></script>
+        <div id="log">
+
+            <span>Someones at the door</span>
+            <button id="dismiss">Dismiss</button>
 
         </div>
+
+        <script src="script.js"></script>
 
     </body>
 

@@ -2,9 +2,22 @@ String.prototype.between = function(min, max) {
     return (parseInt(this) > max) ? String(max) : (parseInt(this) < min ? String(min) : this)
 }
 
+let config = {
+    apiKey: "AIzaSyA4Y0wZ6Z1PcNCQkWfBeT22ln4tP1ocVlA",
+    authDomain: "hatchit-doorbell.firebaseapp.com",
+    databaseURL: "https://hatchit-doorbell.firebaseio.com",
+    projectId: "hatchit-doorbell",
+    storageBucket: "hatchit-doorbell.appspot.com",
+    messagingSenderId: "1089941867226",
+    appId: "1:1089941867226:web:c38c5ef895544c1c"
+}
+
+firebase.initializeApp(config);
+
 let mutedCheckbox       = document.getElementById('muted')
 let officeHoursCheckbox = document.getElementById('only-office-hours')
 let officeHoursInputs   = document.querySelectorAll('input.office-hours')
+let logButton = document.getElementById('log')
 
 mutedCheckbox.addEventListener('click', () => {
 
@@ -91,5 +104,20 @@ Array.from(officeHoursInputs).forEach(input => {
     })
 })
 
+logButton.addEventListener('click', () => {
+    firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(querySnapshot => {
 
+        querySnapshot.forEach(doc => {
+            doc.ref.update({
+                notify : false
+            })
+        })
+        logButton.classList.remove('show')
+    })
+})
 
+firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(query => {
+    
+    if(query.size > 0)
+        logButton.classList.add('show')
+})
