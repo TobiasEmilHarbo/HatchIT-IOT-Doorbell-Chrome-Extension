@@ -1,6 +1,6 @@
 let mutedCheckbox       = document.getElementById('muted')
-let officeHoursCheckbox = document.getElementById('office-hours')
-let officeHoursInputs   = document.getElementsByClassName('office-hours')
+let officeHoursCheckbox = document.getElementById('only-office-hours')
+let officeHoursInputs   = document.querySelectorAll('input.office-hours')
 
 mutedCheckbox.addEventListener('click', () => {
 
@@ -12,6 +12,12 @@ mutedCheckbox.addEventListener('click', () => {
 
         chrome.storage.sync.set({ muted: muted })
 
+        officeHoursCheckbox.disabled = muted
+
+        Array.from(officeHoursInputs).forEach(input => {
+            input.disabled = muted
+        })
+
         chrome.browserAction.setIcon({
             path : (muted) ? "../bell-off.png" : "../bell.png"
         })
@@ -19,8 +25,17 @@ mutedCheckbox.addEventListener('click', () => {
 })
 
 chrome.storage.sync.get(null, data => {
+
     mutedCheckbox.checked = data.muted
     officeHoursCheckbox.checked = data.onlyOfficeHours
+
+    officeHoursCheckbox.disabled = data.muted
+
+    Array.from(officeHoursInputs).forEach(input => {
+        input.disabled = data.muted || !data.onlyOfficeHours
+    })
+
+    console.log(officeHoursInputs)
 
     if(data.officeHours)
     {
@@ -35,6 +50,8 @@ chrome.storage.sync.get(null, data => {
         officeHoursInputs[1].value = String(minsStart).padStart(2, '0')
         officeHoursInputs[2].value = String(hoursEnd).padStart(2, '0')
         officeHoursInputs[3].value = String(minsEnd).padStart(2, '0')
+
+        
     }
 })
 
@@ -45,6 +62,10 @@ officeHoursCheckbox.addEventListener('click', () => {
         const onlyOfficeHours = !data.onlyOfficeHours
 
         chrome.storage.sync.set({ onlyOfficeHours: onlyOfficeHours })
+
+        Array.from(officeHoursInputs).forEach(input => {
+            input.disabled = !onlyOfficeHours
+        })
     })
 })
 
@@ -55,7 +76,7 @@ Array.from(officeHoursInputs).forEach(input => {
 
     input.addEventListener('change', event => {
     
-        input.value = input.value.padStart(2, '0')
+        input.value = input.value.slice(0, 2).padStart(2, '0')
 
         let hoursStart  = parseInt(officeHoursInputs[0].value)
         let minsStart   = parseInt(officeHoursInputs[1].value)
