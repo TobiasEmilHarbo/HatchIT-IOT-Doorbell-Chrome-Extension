@@ -120,21 +120,5 @@ firebase.firestore().collection('notifications').where('notify', '==', true).onS
     
     if(query.size > 0)
         logButton.classList.add('show')
-
-    // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    //     chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
-    //         console.log(response);
-    //     });
-    // });
-
-    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    //     const port = chrome.tabs.connect(tabs[0].id);
-    //     port.postMessage({ function: 'html2' });
-    //     port.onMessage.addListener((response) => {
-    //         html = response.html;
-    //         title = response.title;
-    //         description = response.description;
-    //     });
-    // });
 })
 

@@ -1,4 +1,6 @@
 
+const notificationDOM = document.querySelector('template#HITLAB_notification')
+
 let config = {
     apiKey: "AIzaSyA4Y0wZ6Z1PcNCQkWfBeT22ln4tP1ocVlA",
     authDomain: "hatchit-doorbell.firebaseapp.com",
@@ -59,6 +61,18 @@ firebase.firestore().collection('notifications').where('notify', '==', true).onS
 
         if(data.muted || (!withInOfficeHours && data.onlyOfficeHours) ) return
 
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            let activeTabId = tabs[0].id
+
+            console.log(notificationDOM.innerHTML)
+
+            chrome.tabs.sendMessage(activeTabId, {
+                notify: true,
+                id : notificationDOM.id,
+                dom : notificationDOM.innerHTML
+            });
+        });
+
         chrome.notifications.create('doorbell', config)
     })
 })
@@ -77,15 +91,6 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
                     })
                 })
             })
-
-            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                
-                console.log('tabs', tabs, tabs[0].id)
-
-                chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
-                    console.log('response', response);
-                });
-            });
 
         break
         case (1):

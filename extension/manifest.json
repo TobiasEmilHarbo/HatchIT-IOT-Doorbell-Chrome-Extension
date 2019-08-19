@@ -13,6 +13,7 @@
             "content.js"
         ]
     }],
+    "web_accessible_resources": [],
     "background" : {
         "page": "background.html"
     },
