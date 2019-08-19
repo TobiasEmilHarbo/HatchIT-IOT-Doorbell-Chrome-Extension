@@ -12,7 +12,7 @@ let config = {
     appId: "1:1089941867226:web:c38c5ef895544c1c"
 }
 
-firebase.initializeApp(config);
+firebase.initializeApp(config)
 
 let mutedCheckbox       = document.getElementById('muted')
 let officeHoursCheckbox = document.getElementById('only-office-hours')
@@ -120,4 +120,21 @@ firebase.firestore().collection('notifications').where('notify', '==', true).onS
     
     if(query.size > 0)
         logButton.classList.add('show')
+
+    // chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    //     chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
+    //         console.log(response);
+    //     });
+    // });
+
+    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //     const port = chrome.tabs.connect(tabs[0].id);
+    //     port.postMessage({ function: 'html2' });
+    //     port.onMessage.addListener((response) => {
+    //         html = response.html;
+    //         title = response.title;
+    //         description = response.description;
+    //     });
+    // });
 })
+

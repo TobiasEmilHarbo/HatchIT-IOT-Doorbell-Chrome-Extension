@@ -15,7 +15,7 @@ firebase.firestore().collection('notifications').where('notify', '==', true).onS
     
     chrome.browserAction.setBadgeText({text: ''})
 
-    if(query.size > 0)
+    if(query.size < 1)
         return
 
     let config = {
@@ -77,6 +77,16 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
                     })
                 })
             })
+
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                
+                console.log('tabs', tabs, tabs[0].id)
+
+                chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
+                    console.log('response', response);
+                });
+            });
+
         break
         case (1):
 
@@ -87,11 +97,6 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
 
         break
     }
-})
-
-chrome.browserAction.onClicked.addListener(tab =>
-{
-    console.log(tab)
 })
 
 chrome.storage.sync.get(null, data => {
