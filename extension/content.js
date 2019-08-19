@@ -14,6 +14,15 @@ const showInBrowserNotification = (request) => {
 
 	document.body.appendChild(dom)
 
+	let btn = document.getElementsById('HITLAB_notification_dismiss')
+
+	btn.addEventListener('click', () => {
+		dom.classList.add('hidden')
+		setTimeout(() => {
+			dom.remove()
+		}, 100);
+	})
+
 	setTimeout(() => {
 		dom.classList.remove('hidden')
 	}, 10);
