@@ -13,7 +13,9 @@
             "content.js"
         ]
     }],
-    "web_accessible_resources": [],
+    "web_accessible_resources": [
+        "bell-notification.png"
+    ],
     "background" : {
         "page": "background.html"
     },

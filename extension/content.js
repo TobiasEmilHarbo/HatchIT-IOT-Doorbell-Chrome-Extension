@@ -3,7 +3,7 @@ console.log('CONTENT')
 chrome.runtime.onMessage.addListener(request => {
 	if (request.notify === true)
 		showInBrowserNotification(request)
-});
+})
 
 const showInBrowserNotification = (request) => {
 
@@ -14,16 +14,16 @@ const showInBrowserNotification = (request) => {
 
 	document.body.appendChild(dom)
 
-	let btn = document.getElementsById('HITLAB_notification_dismiss')
+	let btn = document.getElementById('HITLAB_notification_dismiss')
 
 	btn.addEventListener('click', () => {
 		dom.classList.add('hidden')
 		setTimeout(() => {
 			dom.remove()
-		}, 100);
+		}, 100)
 	})
 
 	setTimeout(() => {
 		dom.classList.remove('hidden')
-	}, 10);
+	}, 10)
 }

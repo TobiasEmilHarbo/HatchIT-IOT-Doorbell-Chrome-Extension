@@ -13,68 +13,118 @@ let config = {
 
 firebase.initializeApp(config);
 
+const messaging = firebase.messaging();
+
+messaging.requestPermission()
+.then(() => {
+    console.log('PERMISSION GRADED')
+    return messaging.getToken();
+})
+.then((token) => {
+    console.log(token)
+})
+.catch((error) => {
+    console.log(error)
+})
+
+const channel = new BroadcastChannel('sw-messages')
+channel.addEventListener('message', payload => {
+
+    console.log(payload.data.action)
+
+    switch(payload.data.action)
+    {
+        case('notification') :
+            chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+                let activeTab = tabs[0]
+                console.log('active tab', activeTab)
+                if(!activeTab) return
+        
+                chrome.tabs.sendMessage(activeTab.id, {
+                    notify: true,
+                    id : notificationDOM.id,
+                    dom : notificationDOM.innerHTML
+                })
+            })
+        break
+
+        case('dismiss') : 
+            firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(querySnapshot => {
+
+                querySnapshot.forEach(doc => {
+                    doc.ref.update({
+                        notify : false
+                    })
+                })
+            })
+        break
+    }
+})
+
 firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(query => {
     
+    query.forEach((doc) => {
+        console.log(doc.data())
+    })
+
     chrome.browserAction.setBadgeText({text: ''})
 
     if(query.size < 1)
         return
 
-    let config = {
-        type    : "basic",
-        iconUrl : "bell-notification.png",
-        title   : "Office doorbell",
-        message : "Someones at the door!",
-        buttons : [
-            { title : "I got it!" },
-            { title : "Mute" }
-        ]
-    }
+//     let config = {
+//         type    : "basic",
+//         iconUrl : "bell-notification.png",
+//         title   : "Office doorbell",
+//         message : "Someones at the door!",
+//         buttons : [
+//             { title : "I got it!" },
+//             { title : "Mute" }
+//         ]
+//     }
 
     chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
     chrome.browserAction.setBadgeText({text : String(query.size)})
 
-    chrome.storage.sync.get(null, data => {
+//     chrome.storage.sync.get(null, data => {
 
-        const {
-            hoursStart,
-            minsStart,
-            hoursEnd,
-            minsEnd
-        } = data.officeHours
+//         const {
+//             hoursStart,
+//             minsStart,
+//             hoursEnd,
+//             minsEnd
+//         } = data.officeHours
     
-        const d     = new Date() // current time
-        const hours = d.getHours()
-        const mins  = String(d.getMinutes())
+//         const d     = new Date() // current time
+//         const hours = d.getHours()
+//         const mins  = String(d.getMinutes())
         
-        const currentTime  = parseInt(hours + mins.padStart(2, '0'))
+//         const currentTime  = parseInt(hours + mins.padStart(2, '0'))
 
-        const officeHoursStart  = parseInt(hoursStart + `${minsStart}`.padStart(2, '0'))
-        const officeHoursEnd    = parseInt(hoursEnd   + `${minsEnd}`.padStart(2, '0'))
+//         const officeHoursStart  = parseInt(hoursStart + `${minsStart}`.padStart(2, '0'))
+//         const officeHoursEnd    = parseInt(hoursEnd   + `${minsEnd}`.padStart(2, '0'))
 
-        const withInOfficeHours = (
-            (officeHoursStart <= currentTime &&
-            officeHoursEnd > currentTime) ||
-            (officeHoursStart > currentTime &&
-            officeHoursEnd >= currentTime)
-        )
+//         const withInOfficeHours = (
+//             (officeHoursStart <= currentTime &&
+//             officeHoursEnd > currentTime) ||
+//             (officeHoursStart > currentTime &&
+//             officeHoursEnd >= currentTime)
+//         )
 
-        if(data.muted || (!withInOfficeHours && data.onlyOfficeHours) ) return
+//         if(data.muted || (!withInOfficeHours && data.onlyOfficeHours) ) return
 
-        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-            let activeTabId = tabs[0].id
+//         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+//             let activeTabId = tabs[0].id
 
-            console.log(notificationDOM.innerHTML)
+//             chrome.tabs.sendMessage(activeTabId, {
+//                 notify: true,
+//                 id : notificationDOM.id,
+//                 dom : notificationDOM.innerHTML
+//             });
+//         });
 
-            chrome.tabs.sendMessage(activeTabId, {
-                notify: true,
-                id : notificationDOM.id,
-                dom : notificationDOM.innerHTML
-            });
-        });
-
-        chrome.notifications.create('doorbell', config)
-    })
+//         chrome.notifications.create('doorbell', config)
+//     })
 })
 
 chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
@@ -87,7 +137,7 @@ chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) =
 
                 querySnapshot.forEach(doc => {
                     doc.ref.update({
-                        notify : false
+                        dismissed : true
                     })
                 })
             })
