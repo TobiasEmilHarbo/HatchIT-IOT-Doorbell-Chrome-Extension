@@ -7,7 +7,7 @@ self.addEventListener('push', event => {
     const options = {
         type    : "basic",
         iconUrl : "bell-notification.png",
-        message : "SW Someones at the door!",
+        message : "Someones at the door!",
         actions : [
             {
                 action : "dismiss",

@@ -1,5 +1,5 @@
-String.prototype.between = function(min, max) {
-    return (parseInt(this) > max) ? String(max) : (parseInt(this) < min ? String(min) : this)
+Number.prototype.between = function(min, max) {
+    return (parseInt(this) > max) ? parseInt(max) : (parseInt(this) < min ? parseInt(min) : this)
 }
 
 let config = {
@@ -19,36 +19,37 @@ let officeHoursCheckbox = document.getElementById('only-office-hours')
 let officeHoursInputs   = document.querySelectorAll('input.office-hours')
 let logButton = document.getElementById('log')
 
-mutedCheckbox.addEventListener('click', () => {
+mutedCheckbox.addEventListener('click', (event) => {
 
-    chrome.storage.sync.get('muted', data => {
+    const muted = event.target.checked
 
-        const muted = !data.muted
+    officeHoursCheckbox.disabled = muted
 
-        chrome.storage.sync.set({ muted: muted })
+    Array.from(officeHoursInputs).forEach(input => {
+        if(officeHoursCheckbox.checked)
+            input.disabled = muted
+    })
 
-        officeHoursCheckbox.disabled = muted
+    firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
+        muted : muted
+    }, { merge: true }).catch(() => {})
 
-        Array.from(officeHoursInputs).forEach(input => {
-            if(officeHoursCheckbox.checked)
-                input.disabled = muted
-        })
-
-        chrome.browserAction.setIcon({
-            path : (muted) ? "../bell-off.png" : "../bell.png"
-        })
+    chrome.browserAction.setIcon({
+        path : (muted) ? "../bell-off.png" : "../bell.png"
     })
 })
 
 chrome.storage.sync.get(null, data => {
 
+    console.log(data)
+
     mutedCheckbox.checked = data.muted
-    officeHoursCheckbox.checked = data.onlyOfficeHours
+    officeHoursCheckbox.checked = data.officeHoursOnly
 
     officeHoursCheckbox.disabled = data.muted
 
     Array.from(officeHoursInputs).forEach(input => {
-        input.disabled = data.muted || !data.onlyOfficeHours
+        input.disabled = data.muted || !data.officeHoursOnly
     })
 
     if(data.officeHours)
@@ -69,23 +70,22 @@ chrome.storage.sync.get(null, data => {
 
 officeHoursCheckbox.addEventListener('click', () => {
 
-    chrome.storage.sync.get(null, data => {
+    const officeHoursOnly = event.target.checked
 
-        const onlyOfficeHours = !data.onlyOfficeHours
-
-        chrome.storage.sync.set({ onlyOfficeHours: onlyOfficeHours })
-
-        Array.from(officeHoursInputs).forEach(input => {
-            input.disabled = !onlyOfficeHours
-        })
+    Array.from(officeHoursInputs).forEach(input => {
+        input.disabled = !officeHoursOnly
     })
+
+    firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
+        officeHoursOnly : officeHoursOnly
+    }, { merge: true }).catch(() => {})
 })
 
 Array.from(officeHoursInputs).forEach(input => {
 
     input.addEventListener('change', event => {
-        
-        input.value = input.value.between(input.min, input.max).padStart(2, '0')
+        const sanitized = parseInt(input.value).between(input.min, input.max)
+        input.value = String(sanitized).padStart(2, '0')
 
         let hoursStart  = parseInt(officeHoursInputs[0].value)
         let minsStart   = parseInt(officeHoursInputs[1].value)
@@ -93,30 +93,34 @@ Array.from(officeHoursInputs).forEach(input => {
         let hoursEnd    = parseInt(officeHoursInputs[2].value)
         let minsEnd     = parseInt(officeHoursInputs[3].value)
 
-        chrome.storage.sync.set({ 
+        firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
             officeHours : {
                 hoursStart : hoursStart,
                 minsStart  : minsStart,
                 hoursEnd   : hoursEnd,
                 minsEnd    : minsEnd
             }
-        })
+        }, { merge: true }).catch(() => {})
     })
 })
 
 logButton.addEventListener('click', () => {
-    firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(querySnapshot => {
+    firebase.firestore()
+        .collection('notifications')
+        .where('dismissed', '==', false)
+        .get().then(querySnapshot => {
 
-        querySnapshot.forEach(doc => {
-            doc.ref.update({
-                notify : false
+            querySnapshot.forEach(doc => {
+                doc.ref.update({
+                    dismissed : true
+                })
             })
-        })
+
         logButton.classList.remove('show')
     })
 })
 
-firebase.firestore().collection('notifications').where('notify', '==', true).onSnapshot(query => {
+firebase.firestore().collection('notifications').where('dismissed', '==', false).onSnapshot(query => {
     
     if(query.size > 0)
         logButton.classList.add('show')

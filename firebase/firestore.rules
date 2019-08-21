@@ -9,7 +9,14 @@ service cloud.firestore {
     match /notifications/{ notification }
 		{
       allow read: if true;
-      allow write: if request.resource.data.notify == true || request.resource.data.notify == false;
+      allow write: if request.resource.data.dismissed == true
+                   || request.resource.data.dismissed == false;
+    }
+    
+  	match /apps/{ app }
+    {
+        allow read: if true;
+        allow write: if true;
     }
   }
 }
