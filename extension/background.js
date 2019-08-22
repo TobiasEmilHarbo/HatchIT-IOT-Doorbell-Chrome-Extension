@@ -1,5 +1,5 @@
 
-const notificationDOM = document.querySelector('template#HITLAB_notification')
+const notificationDOM = document.getElementById('HITLAB_notification')
 
 let config = {
     apiKey: "AIzaSyA4Y0wZ6Z1PcNCQkWfBeT22ln4tP1ocVlA",
@@ -81,12 +81,11 @@ firebase.firestore()
             muted,
         } = documentSnapshot.data()
 
-        console.log(inBrowserNotifications,
-            systemNotifications,
-            badgeNotifications,
-            officeHoursOnly,
-            officeHours,
-            muted)
+        if(!inBrowserNotifications)
+            chrome.browserAction.setBadgeText({text: ''})
+
+        if(notifyBrowser && inBrowserNotifications)
+            sendInBrowserNotification(documentSnapshot.ref)
 
         if(inBrowserNotifications   === undefined
         || systemNotifications      === undefined
@@ -97,15 +96,13 @@ firebase.firestore()
         ) return
 
         chrome.storage.sync.set({
-            inBrowserNotifications   : inBrowserNotifications,
+            inBrowserNotifications  : inBrowserNotifications,
             systemNotifications     : systemNotifications,
             badgeNotifications      : badgeNotifications,
             officeHoursOnly         : officeHoursOnly,
             officeHours             : officeHours,
             muted                   : muted
         })
-
-        if(notifyBrowser) sendInBrowserNotification(documentSnapshot.ref)
 })
 
 firebase.firestore()
@@ -118,8 +115,13 @@ firebase.firestore()
         if(query.size < 1)
             return
 
-        chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
-        chrome.browserAction.setBadgeText({text : String(query.size)})
+        chrome.storage.sync.get(null, data => {
+            if(data.badgeNotifications)
+            {
+                chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
+                chrome.browserAction.setBadgeText({text : String(query.size)})
+            }
+        })
 })
 
 const channel = new BroadcastChannel('sw-messages')
@@ -128,8 +130,10 @@ channel.addEventListener('message', payload => {
     switch(payload.data.action)
     {
         case('notification') :
-            
-            sendInBrowserNotification()
+            chrome.storage.sync.get(null, data => {
+                if(data.inBrowserNotifications)
+                    sendInBrowserNotification()
+            })
         break
 
         case('dismiss') : 
@@ -172,13 +176,7 @@ chrome.notifications
             
             case (1) :
 
-                firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
-                    muted : true
-                }, { merge: true })
-
-                chrome.browserAction.setIcon({
-                    path : "../bell-off.png"
-                })
+                muteNotificaitons()
 
             break
         }
@@ -190,6 +188,12 @@ chrome.storage.sync.get(null, data => {
     chrome.browserAction.setIcon({
         path : (muted) ? "../bell-off.png" : "../bell.png"
     })
+})
+
+chrome.runtime
+	.onMessage.addListener(request => {
+        if (request.mute === true)
+            muteNotificaitons()
 })
 
 const sendInBrowserNotification = (docRef) => {
@@ -215,5 +219,15 @@ const sendInBrowserNotification = (docRef) => {
             id      : notificationDOM.id,
             dom     : notificationDOM.innerHTML
         })
+    })
+}
+
+const muteNotificaitons = () => {
+    firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
+        muted : true
+    }, { merge: true })
+
+    chrome.browserAction.setIcon({
+        path : "../bell-off.png"
     })
 }

@@ -11,12 +11,10 @@ const showInBrowserNotification = (request) => {
 
 		const tabId = request.tabId
 
-		console.log('i am', tabId)
 		let notifiedTabs = new Set()
 
 		if(data.browserNotify)
 		{
-			console.log('old', data.browserNotify)
 			notifiedTabs = new Set(data.browserNotify)
 
 			if(notifiedTabs.has(tabId))
@@ -39,22 +37,25 @@ const showInBrowserNotification = (request) => {
 
 		notifiedTabs.add(tabId)
 
-		console.log('new', notifiedTabs)
-
 		chrome.storage.sync.set({
 			browserNotify : Array.from(notifiedTabs)
 		})
 
-		let btn = document.getElementById('HITLAB_notification_dismiss')
+		let btnDismiss = document.getElementById('HITLAB_notification_dismiss')
+		let btnMute = document.getElementById('HITLAB_notification_mute')
 
-		btn.addEventListener('click', () => {
+		btnDismiss.addEventListener('click', () => {
 			hideNotification(dom, tabId)
+		})
+
+		btnMute.addEventListener('click', () => {
+			hideNotification(dom, tabId)
+			chrome.runtime.sendMessage(null, { mute: true })
 		})
 
 		setTimeout(() => {
 			hideNotification(dom, tabId)
 		}, 10000)
-
 	})
 }
 
@@ -66,14 +67,10 @@ const hideNotification = (dom, tabId) => {
 
 		if(data.browserNotify)
 		{
-			console.log('old', data.browserNotify)
-
 			notifiedTabs = new Set(data.browserNotify)
 
 			notifiedTabs.delete(tabId)
 		}
-		
-		console.log('new', notifiedTabs)
 		
 		chrome.storage.sync.set({
 			browserNotify : Array.from(notifiedTabs)

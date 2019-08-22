@@ -22,8 +22,8 @@
             }
             
             div.popup {
-                width: 320px;
-                margin: 16px;
+                width: 312px;
+                margin: 16px 32px;
                 margin-bottom:32px;
             }
 
@@ -39,23 +39,27 @@
 
             div.only-office-hours,
             div.muted {
-                font-size: 18px;
+                font-size: 16px;
             }
 
             div.only-office-hours,
             div.muted {
+                font-size: 16px;
                 display: grid;
                 grid-template-rows: auto;
-                grid-template-columns: 5fr 16px 3fr;
+                grid-template-columns: 5fr 1.5fr;
+                column-gap: 20px;
+                row-gap: 20px;
             }
 
             label[for="only-office-hours"] {
                 grid-column: 1;
-                text-align: right;
+                /* text-align: right; */
+                align-self: center;
             }
 
             label.switch {
-                grid-column: 3;
+                grid-column: 2;
                 align-self: center;
             }
 
@@ -250,7 +254,7 @@
 
             div#log.show{
                 height: auto;
-                padding: 24px 32px;
+                padding: 16px 24px;
                 -webkit-transition: .2s;
                 transition: .2s;
             }
@@ -351,8 +355,6 @@
                 </label>
 
             </div>
-
-            <br>
 
             <div class="office-hours">
 
