@@ -16,6 +16,7 @@
     "web_accessible_resources": [
         "bell-notification.png"
     ],
+    "options_page": "options/index.html",
     "background" : {
         "page": "background.html"
     },

@@ -2,12 +2,9 @@ const channel = new BroadcastChannel('sw-messages')
 
 self.addEventListener('push', event => {
 
-    const title = 'SW Office doorbell'
+    const title = 'Office doorbell'
 
     const options = {
-        type    : "basic",
-        iconUrl : "bell-notification.png",
-        message : "Someones at the door!",
         actions : [
             {
                 action : "dismiss",
@@ -17,7 +14,10 @@ self.addEventListener('push', event => {
                 action : "mute",
                 title : "Mute"
             }
-        ]
+        ],
+        type    : "basic",
+        icon    : "bell-notification.png",
+        body    : "Someones at the door!"
     }
 
     channel.postMessage({

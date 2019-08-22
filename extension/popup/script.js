@@ -41,8 +41,6 @@ mutedCheckbox.addEventListener('click', (event) => {
 
 chrome.storage.sync.get(null, data => {
 
-    console.log(data)
-
     mutedCheckbox.checked = data.muted
     officeHoursCheckbox.checked = data.officeHoursOnly
 
@@ -120,9 +118,15 @@ logButton.addEventListener('click', () => {
     })
 })
 
-firebase.firestore().collection('notifications').where('dismissed', '==', false).onSnapshot(query => {
+firebase.firestore()
+    .collection('notifications')
+    .where('dismissed', '==', false)
+    .onSnapshot(querySnapshot => {
     
-    if(query.size > 0)
-        logButton.classList.add('show')
+        if(querySnapshot.size > 0)
+            logButton.classList.add('show')
+        else
+            logButton.classList.remove('show')
+
 })
 

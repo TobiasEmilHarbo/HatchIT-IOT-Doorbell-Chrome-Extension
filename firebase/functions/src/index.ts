@@ -29,10 +29,22 @@ app.use('/', publicRouter)
 
 publicRouter.route('/notify')
     .post(async (req: express.Request, res: express.Response) => {
-        await notify()
-        res.status(200).json({
-            message: 'Notification sent'
-        })
+        try
+        {
+            await notify()
+            res.status(200).json({
+                message: 'Notification sent'
+            })
+    
+        }
+        catch(error)
+        {
+            res.status(500).json({
+                error : error.message,
+                message: 'Notification failed to be sent'
+            })
+    
+        }
     })
 
 publicRouter.route('/uninstall/:id')
@@ -61,7 +73,32 @@ const notify = async () => {
 
         snapshot.forEach(doc => {
 
-            const { token, muted, officeHours, officeHoursOnly, timezoneOffset } = doc.data()
+            const {
+                token,
+                muted,
+                officeHours,
+                officeHoursOnly,
+                timezoneOffset,
+                systemNotifications
+            } = doc.data()
+
+            if(!token || muted) return 
+
+            if(!officeHoursOnly)
+            {
+                if(!systemNotifications)
+                {
+                    doc.ref.set({
+                        notifyBrowser : true
+                    }, { merge: true }).catch(error => {console.error(error)})
+
+                    return
+                }
+
+                tokens.push(token)
+                
+                return
+            }
 
             const {
                 hoursStart,
@@ -86,9 +123,17 @@ const notify = async () => {
                 officeHoursEnd >= currentTime)
             )
     
-            if(muted || (!withInOfficeHours && officeHoursOnly) ) return
+            if(!withInOfficeHours) return
 
-            if(token) tokens.push(token)
+            if(!systemNotifications)
+            {
+                doc.ref.set({
+                    notifyBrowser : true
+                }).catch(error => {console.error(error)})
+                return
+            }
+
+            tokens.push(token)
         })
 
         const promisses = Array()
@@ -96,16 +141,7 @@ const notify = async () => {
         if(tokens.length > 0)
         {
             promisses.push(
-                admin.messaging().sendToDevice(
-                    tokens,
-                    {
-                        data : {
-                            title : 'yoyoyoyo',
-                            body : 'YOYOYOYO',
-                            icon : ''
-                        }
-                    }
-                )
+                admin.messaging().sendToDevice(tokens, {data : {}})
             )
         }
 
@@ -114,6 +150,12 @@ const notify = async () => {
                 dismissed : false,
                 at : admin.firestore.FieldValue.serverTimestamp()
             })
+        )
+
+        promisses.push(
+            admin.firestore().collection('notifications').doc('counter').set({
+                notificaions : admin.firestore.FieldValue.increment(1)
+            }, {merge: true})
         )
 
         return Promise.all(promisses)

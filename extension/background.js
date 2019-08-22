@@ -23,15 +23,25 @@ chrome.runtime.onInstalled.addListener(details => {
             firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
                 muted : false,
                 officeHours : {
-                    hoursStart : 8,
-                    minsStart : 30,
-                    hoursEnd : 16,
-                    minsEnd : 0
+                    hoursStart  : 8,
+                    minsStart   : 30,
+                    hoursEnd    : 16,
+                    minsEnd     : 0
                 },
+                inBrowserNotifications : true,
+                systemNotifications : false,
+                badgeNotifications : true,
                 officeHoursOnly : true,
                 timezoneOffset : (new Date()).getTimezoneOffset() / 60
             }).catch(error => console.log(error))
         
+        break
+
+        default : 
+            chrome.storage.sync.set({
+                browserNotify : []
+            })
+            console.log('onInstalled reason', details.reason)
         break
     }
 })
@@ -54,22 +64,62 @@ messaging.requestPermission()
         }, { merge: true })
     })
 
-firebase.firestore().collection('apps').doc(chrome.runtime.id).onSnapshot(querySnapshot => {
+firebase.firestore()
+    .collection('apps')
+    .doc(chrome.runtime.id)
+    .onSnapshot(documentSnapshot => {
 
-    const { muted, officeHours, officeHoursOnly } = querySnapshot.data()
+        if(!documentSnapshot.data()) return
 
-    if(muted === undefined || officeHours === undefined || officeHoursOnly === undefined) return
+        const {
+            inBrowserNotifications,
+            systemNotifications,
+            badgeNotifications,
+            officeHoursOnly,
+            notifyBrowser,
+            officeHours,
+            muted,
+        } = documentSnapshot.data()
 
-    chrome.storage.sync.set({
-        muted : muted,
-        officeHoursOnly : officeHoursOnly,
-        officeHours : {
-            hoursStart : officeHours.hoursStart,
-            minsStart  : officeHours.minsStart,
-            hoursEnd   : officeHours.hoursEnd,
-            minsEnd    : officeHours.minsEnd
-        }
-    })
+        console.log(inBrowserNotifications,
+            systemNotifications,
+            badgeNotifications,
+            officeHoursOnly,
+            officeHours,
+            muted)
+
+        if(inBrowserNotifications   === undefined
+        || systemNotifications      === undefined
+        || badgeNotifications       === undefined
+        || officeHoursOnly          === undefined
+        || officeHours              === undefined
+        || muted                    === undefined
+        ) return
+
+        chrome.storage.sync.set({
+            inBrowserNotifications   : inBrowserNotifications,
+            systemNotifications     : systemNotifications,
+            badgeNotifications      : badgeNotifications,
+            officeHoursOnly         : officeHoursOnly,
+            officeHours             : officeHours,
+            muted                   : muted
+        })
+
+        if(notifyBrowser) sendInBrowserNotification(documentSnapshot.ref)
+})
+
+firebase.firestore()
+    .collection('notifications')
+    .where('dismissed', '==', false)
+    .onSnapshot(query => {
+    
+        chrome.browserAction.setBadgeText({text: ''})
+
+        if(query.size < 1)
+            return
+
+        chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
+        chrome.browserAction.setBadgeText({text : String(query.size)})
 })
 
 const channel = new BroadcastChannel('sw-messages')
@@ -78,20 +128,12 @@ channel.addEventListener('message', payload => {
     switch(payload.data.action)
     {
         case('notification') :
-            chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-                let activeTab = tabs[0]
-
-                if(!activeTab) return
-        
-                chrome.tabs.sendMessage(activeTab.id, {
-                    notify: true,
-                    id : notificationDOM.id,
-                    dom : notificationDOM.innerHTML
-                })
-            })
+            
+            sendInBrowserNotification()
         break
 
         case('dismiss') : 
+            
             firebase.firestore()
                 .collection('notifications')
                 .where('dismissed', '==', false)
@@ -107,45 +149,39 @@ channel.addEventListener('message', payload => {
     }
 })
 
-firebase.firestore().collection('notifications').where('dismissed', '==', false).onSnapshot(query => {
-    
-    chrome.browserAction.setBadgeText({text: ''})
+chrome.notifications
+    .onButtonClicked.addListener((notificationId, buttonIndex) => {
 
-    if(query.size < 1)
-        return
+        switch(buttonIndex)
+        {
+            case (0) :
 
-    chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
-    chrome.browserAction.setBadgeText({text : String(query.size)})
-})
+                firebase.firestore()
+                    .collection('notifications')
+                    .where('dismissed', '==', false)
+                    .onSnapshot(querySnapshot => {
 
-chrome.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
-
-    switch(buttonIndex)
-    {
-        case (0) :
-
-            firebase.firestore().collection('notifications').where('dismissed', '==', false).onSnapshot(querySnapshot => {
-
-                querySnapshot.forEach(doc => {
-                    doc.ref.update({
-                        dismissed : true
+                        querySnapshot.forEach(doc => {
+                            doc.ref.update({
+                                dismissed : true
+                            })
+                        })
                     })
+
+            break
+            
+            case (1) :
+
+                firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
+                    muted : true
+                }, { merge: true })
+
+                chrome.browserAction.setIcon({
+                    path : "../bell-off.png"
                 })
-            })
 
-        break
-        case (1) :
-
-            firebase.firestore().collection('apps').doc(chrome.runtime.id).set({
-                muted : true
-            }, { merge: true })
-
-            chrome.browserAction.setIcon({
-                path : "../bell-off.png"
-            })
-
-        break
-    }
+            break
+        }
 })
 
 chrome.storage.sync.get(null, data => {
@@ -155,3 +191,29 @@ chrome.storage.sync.get(null, data => {
         path : (muted) ? "../bell-off.png" : "../bell.png"
     })
 })
+
+const sendInBrowserNotification = (docRef) => {
+    if(docRef)
+    {
+        docRef.update({
+            notifyBrowser : false
+        })
+    }
+
+    chrome.tabs.query({
+        active: true,
+        currentWindow: true
+    }, tabs => {
+
+        let activeTab = tabs[0]
+
+        if(!activeTab) return
+
+        chrome.tabs.sendMessage(activeTab.id, {
+            notify  : true,
+            tabId   : activeTab.id,
+            id      : notificationDOM.id,
+            dom     : notificationDOM.innerHTML
+        })
+    })
+}

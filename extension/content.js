@@ -1,29 +1,88 @@
-console.log('CONTENT')
+chrome.runtime
+	.onMessage.addListener(request => {
 
-chrome.runtime.onMessage.addListener(request => {
-	if (request.notify === true)
-		showInBrowserNotification(request)
+		if (request.notify === true)
+			showInBrowserNotification(request)
 })
 
 const showInBrowserNotification = (request) => {
 
-	const dom = document.createElement('div')
-	dom.id = request.id
-	dom.innerHTML = request.dom
-	dom.classList.add('hidden')
+	chrome.storage.sync.get(null, data => {
 
-	document.body.appendChild(dom)
+		const tabId = request.tabId
 
-	let btn = document.getElementById('HITLAB_notification_dismiss')
+		console.log('i am', tabId)
+		let notifiedTabs = new Set()
 
-	btn.addEventListener('click', () => {
+		if(data.browserNotify)
+		{
+			console.log('old', data.browserNotify)
+			notifiedTabs = new Set(data.browserNotify)
+
+			if(notifiedTabs.has(tabId))
+			{
+				console.log(tabId, 'already in the array')
+				return
+			}
+		}
+		
+		const dom = document.createElement('div')
+		dom.id = request.id
+		dom.innerHTML = request.dom
 		dom.classList.add('hidden')
+
+		document.body.appendChild(dom)
+
 		setTimeout(() => {
-			dom.remove()
+			dom.classList.remove('hidden')
 		}, 100)
+
+		notifiedTabs.add(tabId)
+
+		console.log('new', notifiedTabs)
+
+		chrome.storage.sync.set({
+			browserNotify : Array.from(notifiedTabs)
+		})
+
+		let btn = document.getElementById('HITLAB_notification_dismiss')
+
+		btn.addEventListener('click', () => {
+			hideNotification(dom, tabId)
+		})
+
+		setTimeout(() => {
+			hideNotification(dom, tabId)
+		}, 10000)
+
+	})
+}
+
+const hideNotification = (dom, tabId) => {
+	
+	chrome.storage.sync.get(null, data => {
+
+		let notifiedTabs = new Set()
+
+		if(data.browserNotify)
+		{
+			console.log('old', data.browserNotify)
+
+			notifiedTabs = new Set(data.browserNotify)
+
+			notifiedTabs.delete(tabId)
+		}
+		
+		console.log('new', notifiedTabs)
+		
+		chrome.storage.sync.set({
+			browserNotify : Array.from(notifiedTabs)
+		})
 	})
 
+	dom.classList.add('hidden')
+
 	setTimeout(() => {
-		dom.classList.remove('hidden')
-	}, 10)
+		dom.remove()
+	}, 100)
 }
