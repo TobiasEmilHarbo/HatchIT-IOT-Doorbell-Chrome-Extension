@@ -90,7 +90,7 @@ const notify = async () => {
                 {
                     doc.ref.set({
                         notifyBrowser : true
-                    }, { merge: true }).catch(error => {console.error(error)})
+                    }, { merge : true }).catch(error => {console.error(error)})
 
                     return
                 }
@@ -129,7 +129,7 @@ const notify = async () => {
             {
                 doc.ref.set({
                     notifyBrowser : true
-                }).catch(error => {console.error(error)})
+                }, { merge : true }).catch(error => {console.error(error)})
                 return
             }
 

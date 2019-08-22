@@ -81,5 +81,5 @@ const hideNotification = (dom, tabId) => {
 
 	setTimeout(() => {
 		dom.remove()
-	}, 100)
+	}, 400)
 }

@@ -12,12 +12,6 @@
 
         <script src="https://www.gstatic.com/firebasejs/6.3.5/firebase.js"></script>
 
-        <style>
-            body {
-                background: gray; 
-            }
-        </style>
-
     </head>
 
     <body>
@@ -57,8 +51,7 @@
 
             <style>
 
-                div#HITLAB_notification div.HITLAB_notification_body {
-                    background-color: white;
+                div#HITLAB_notification {
                     z-index: 999999;
                     margin: 32px;
                     position: fixed;
@@ -67,6 +60,14 @@
                     right: 0;
                     -webkit-transition: .4s;
                     transition: .4s;
+                }
+
+                div#HITLAB_notification.hidden {
+                    right: -100%;
+                }
+                
+                div#HITLAB_notification div.HITLAB_notification_body {
+                    background-color: white;
                     display: grid;
                     grid-template-columns: 1fr 3fr;
                     grid-template-rows: auto 1fr;
@@ -76,9 +77,6 @@
                     box-shadow: -2px 0px 300px 38px rgba(94,94,94,1);
                 }
 
-                div#HITLAB_notification.hidden {
-                    right: -100%;
-                }
 
                 div#HITLAB_notification figure.HITLAB_notification_icon {
                     grid-row: 1;
@@ -91,11 +89,6 @@
                     grid-column: 2;
                     grid-row: 1;
                     align-self: center;
-                    /* justify-self: center; */
-                }
-
-                div#HITLAB_notification div.HITLAB_notification_caption h2{
-                    font-size: 1.5em;
                 }
 
                 div#HITLAB_notification div.HITLAB_notification_caption h2,
@@ -103,6 +96,14 @@
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
                     margin: 0;
 
+                }
+
+                div#HITLAB_notification div.HITLAB_notification_caption h2{
+                    font-size: 24px;
+                }
+
+                div#HITLAB_notification div.HITLAB_notification_caption p{
+                    font-size: 18px;
                 }
 
                 div#HITLAB_notification div.HITLAB_notification_actions {
@@ -129,6 +130,8 @@
                     overflow:visible;
                     width:auto;
                     /*reset end*/
+                    
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 
                     background: white;
                     padding: 12px 24px;
@@ -149,7 +152,7 @@
 
         </div>
 
-        <script src="background.js"></script>
+        <script src="script.js"></script>
         
     </body>
 

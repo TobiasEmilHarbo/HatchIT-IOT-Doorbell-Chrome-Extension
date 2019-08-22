@@ -14,14 +14,14 @@
         ]
     }],
     "web_accessible_resources": [
-        "bell-notification.png"
+        "images/bell-notification.png"
     ],
     "options_page": "options/index.html",
     "background" : {
-        "page": "background.html"
+        "page": "background/index.html"
     },
     "browser_action" : {
-        "default_icon" : "bell.png",
+        "default_icon" : "images/bell.png",
         "default_title" : "HatchIT Doorbell",
         "default_popup" : "popup/index.html" 
     },
@@ -31,8 +31,8 @@
         "storage"
     ],
     "icons" : {
-        "16": "bell.png",
-        "48": "bell.png",
-        "128": "bell.png"
+        "16": "images/bell.png",
+        "48": "images/bell.png",
+        "128": "images/bell.png"
     }
 }

@@ -29,7 +29,7 @@ chrome.runtime.onInstalled.addListener(details => {
                     minsEnd     : 0
                 },
                 inBrowserNotifications : true,
-                systemNotifications : false,
+                systemNotifications : true,
                 badgeNotifications : true,
                 officeHoursOnly : true,
                 timezoneOffset : (new Date()).getTimezoneOffset() / 60
@@ -186,7 +186,7 @@ chrome.storage.sync.get(null, data => {
     const muted = data.muted
 
     chrome.browserAction.setIcon({
-        path : (muted) ? "../bell-off.png" : "../bell.png"
+        path : (muted) ? "../images/bell-off.png" : "../images/bell.png"
     })
 })
 
@@ -199,9 +199,9 @@ chrome.runtime
 const sendInBrowserNotification = (docRef) => {
     if(docRef)
     {
-        docRef.update({
+        docRef.set({
             notifyBrowser : false
-        })
+        }, { merge : true })
     }
 
     chrome.tabs.query({
@@ -228,6 +228,6 @@ const muteNotificaitons = () => {
     }, { merge: true })
 
     chrome.browserAction.setIcon({
-        path : "../bell-off.png"
+        path : "../images/bell-off.png"
     })
 }
