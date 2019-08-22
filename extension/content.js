@@ -46,6 +46,7 @@ const showInBrowserNotification = (request) => {
 
 		btnDismiss.addEventListener('click', () => {
 			hideNotification(dom, tabId)
+			chrome.runtime.sendMessage(null, { dismiss: true })
 		})
 
 		btnMute.addEventListener('click', () => {

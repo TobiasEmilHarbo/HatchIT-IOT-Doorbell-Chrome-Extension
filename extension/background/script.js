@@ -109,15 +109,18 @@ firebase.firestore()
     .collection('notifications')
     .where('dismissed', '==', false)
     .onSnapshot(query => {
-    
+        
         chrome.browserAction.setBadgeText({text: ''})
 
-        if(query.size < 1)
-            return
+        chrome.storage.sync.get(['badgeNotifications'], data => {
 
-        chrome.storage.sync.get(null, data => {
             if(data.badgeNotifications)
             {
+                chrome.browserAction.setBadgeText({text: ''})
+
+                if(query.size < 1)
+                    return
+
                 chrome.browserAction.setBadgeBackgroundColor({color : '#ee5519'})
                 chrome.browserAction.setBadgeText({text : String(query.size)})
             }
@@ -138,17 +141,7 @@ channel.addEventListener('message', payload => {
 
         case('dismiss') : 
             
-            firebase.firestore()
-                .collection('notifications')
-                .where('dismissed', '==', false)
-                .get().then(querySnapshot => {
-
-                    querySnapshot.forEach(doc => {
-                        doc.ref.update({
-                            dismissed : true
-                        })
-                    })
-            })
+            dismissNotifications()
         break
     }
 })
@@ -160,17 +153,7 @@ chrome.notifications
         {
             case (0) :
 
-                firebase.firestore()
-                    .collection('notifications')
-                    .where('dismissed', '==', false)
-                    .onSnapshot(querySnapshot => {
-
-                        querySnapshot.forEach(doc => {
-                            doc.ref.update({
-                                dismissed : true
-                            })
-                        })
-                    })
+                dismissNotifications()
 
             break
             
@@ -194,6 +177,8 @@ chrome.runtime
 	.onMessage.addListener(request => {
         if (request.mute === true)
             muteNotificaitons()
+        if(request.dismiss === true)
+            dismissNotifications()
 })
 
 const sendInBrowserNotification = (docRef) => {
@@ -230,4 +215,18 @@ const muteNotificaitons = () => {
     chrome.browserAction.setIcon({
         path : "../images/bell-off.png"
     })
+}
+
+const dismissNotifications = () => {
+    firebase.firestore()
+        .collection('notifications')
+        .where('dismissed', '==', false)
+        .get().then(querySnapshot => {
+
+            querySnapshot.forEach(doc => {
+                doc.ref.update({
+                    dismissed : true
+                })
+            })
+        })
 }
