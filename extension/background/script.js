@@ -169,7 +169,7 @@ chrome.storage.sync.get(null, data => {
     const muted = data.muted
 
     chrome.browserAction.setIcon({
-        path : (muted) ? "../images/bell-off.png" : "../images/bell.png"
+        path : (muted) ? "../images/bell-off48.png" : "../images/bell48.png"
     })
 })
 
@@ -213,7 +213,7 @@ const muteNotificaitons = () => {
     }, { merge: true })
 
     chrome.browserAction.setIcon({
-        path : "../images/bell-off.png"
+        path : "../images/bell-off48.png"
     })
 }
 

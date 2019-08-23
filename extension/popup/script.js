@@ -35,7 +35,7 @@ mutedCheckbox.addEventListener('click', (event) => {
     }, { merge: true }).catch(() => {})
 
     chrome.browserAction.setIcon({
-        path : (muted) ? "../images/bell-off.png" : "../images/bell.png"
+        path : (muted) ? "../images/bell-off48.png" : "../images/bell48.png"
     })
 })
 

@@ -16,7 +16,7 @@ self.addEventListener('push', event => {
             }
         ],
         type    : "basic",
-        icon    : "images/bell-notification.png",
+        icon    : "images/bell-circled-icon48.png",
         body    : "Someones at the door!"
     }
 

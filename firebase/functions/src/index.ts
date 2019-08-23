@@ -18,7 +18,7 @@ adminFs.settings(settings)
 
 exports.doorbell = functions.pubsub.topic('doorbell').onPublish(message => {
     
-    return notify()
+    return notify(message)
 })
 
 app.use(bodyParser.json())
@@ -66,10 +66,18 @@ publicRouter.route('/uninstall/:id')
 
 exports.httpOnRequest = functions.https.onRequest(app)
 
-const notify = async () => {
+const notify = async (message?: functions.pubsub.Message) => {
 
     return admin.firestore().collection('apps').where('muted', '==', false).get().then(snapshot => {
         const tokens = Array()
+
+        let payload = { battery_level : undefined }
+
+        if(message)
+        {
+            const decodePayload = Buffer.from(message.data, 'base64').toString('ascii')
+            payload 		    = JSON.parse(decodePayload)
+        }
 
         snapshot.forEach(doc => {
 
@@ -148,6 +156,7 @@ const notify = async () => {
         promisses.push(
             admin.firestore().collection('notifications').add({
                 dismissed : false,
+                battery_level : payload.battery_level,
                 at : admin.firestore.FieldValue.serverTimestamp()
             })
         )

@@ -3,7 +3,7 @@
     "name": "HatchIT IOT Enabled Doorbell",
     "short_name": "HatchIT Doorbell",
     "version": "0.1",
-    "description": "HatchIT IOT Enabled Doorbell",
+    "description": "Enables you to get notifications in your browser letting you know if someones at the door at the HatchIT LAB office space.",
     "content_security_policy":"script-src 'self' https://www.gstatic.com/ https://*.firebaseio.com https://www.googleapis.com; object-src 'self'",
     "content_scripts": [{
         "matches" : [
@@ -14,14 +14,14 @@
         ]
     }],
     "web_accessible_resources": [
-        "images/bell-notification.png"
+        "images/bell-circled-icon48.png"
     ],
     "options_page": "options/index.html",
     "background" : {
         "page": "background/index.html"
     },
     "browser_action" : {
-        "default_icon" : "images/bell.png",
+        "default_icon" : "images/bell48.png",
         "default_title" : "HatchIT Doorbell",
         "default_popup" : "popup/index.html" 
     },
@@ -31,8 +31,8 @@
         "storage"
     ],
     "icons" : {
-        "16": "images/bell.png",
-        "48": "images/bell.png",
-        "128": "images/bell.png"
+        "16": "images/bell16.png",
+        "48": "images/bell48.png",
+        "128": "images/bell128.png"
     }
 }

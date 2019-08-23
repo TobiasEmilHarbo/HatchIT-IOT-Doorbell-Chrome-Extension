@@ -1,6 +1,7 @@
 chrome.runtime
 	.onMessage.addListener(request => {
 
+		console.log('NOTIFY')
 		if (request.notify === true)
 			showInBrowserNotification(request)
 })
